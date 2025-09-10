@@ -5,5 +5,8 @@
     "notyf": "^3.10.0",
     "tsparticles": "^3.9.1",
     "tsparticles-preset-confetti": "^2.12.0"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.3.0"
   }
 }
