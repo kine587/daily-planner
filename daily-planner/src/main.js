@@ -1,13 +1,30 @@
 import "./style.css";
 import { format, isBefore } from "date-fns";
+import "emoji-picker-element";
+import "tsparticles";
 
 const todayEl = document.getElementById("today");
 const form = document.getElementById("planner-form");
 const plannerInput = document.getElementById("planner-input");
 const dateInput = document.getElementById("date-input");
 const plannerList = document.getElementById("planner-list");
+const clearBtn = document.getElementById("clear-btn");
+
+//emoji picker
+const emojiPicker = document.createElement("emoji-picker");
+document.body.appendChild(emojiPicker);
+
+emojiPicker.addEventListener("emoji-click", (e) => {
+  plannerInput.value += e.detail.unicode;
+});
 
 let plans = [];
+
+clearBtn.addEventListener("click", () => {
+  plans = [];
+  localStorage.removeItem("plans");
+  renderPlans();
+});
 
 //show todays date
 todayEl.textContent = format(new Date(), "EEEE, MMMM d");
@@ -26,6 +43,7 @@ form.addEventListener("submit", (e) => {
   };
 
   plans.push(newPlan);
+  savePlans();
   renderPlans();
 
   plannerInput.value = "";
@@ -58,11 +76,22 @@ function renderPlans() {
       if (overdue) div.style.color = "red";
     }
 
-    div.textContent = text;
+    const textSpan = document.createElement("span");
+    textSpan.textContent = text;
+    div.appendChild(textSpan);
 
     if (!plan.completed) {
+      // edit button
+      const editBtn = document.createElement("button");
+      editBtn.textContent = "Edit";
+      editBtn.addEventListener("click", () => editPlan(plan.id));
+      div.appendChild(editBtn);
+    }
+
+    if (!plan.completed) {
+      // done button
       const btn = document.createElement("button");
-      btn.textContent = " done";
+      btn.textContent = "✅ done";
       btn.addEventListener("click", () => completePlan(plan.id));
       div.appendChild(btn);
     }
@@ -71,7 +100,113 @@ function renderPlans() {
   });
 }
 
+function savePlans() {
+  localStorage.setItem("plans", JSON.stringify(plans));
+}
+
+function loadPlans() {
+  const storedPlans = localStorage.getItem("plans");
+  if (storedPlans) {
+    plans = JSON.parse(storedPlans);
+    renderPlans();
+  }
+}
+
+function editPlan(id) {
+  const plan = plans.find((p) => p.id === id);
+  if (!plan) return;
+
+  //replace text in dom
+  const planDiv = [...plannerList.children].find((el) =>
+    el.textContent.includes(plan.text)
+  );
+  if (!planDiv) return;
+
+  planDiv.textContent = "";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = plan.text;
+  planDiv.appendChild(input);
+  input.focus();
+
+  function saveEdit() {
+    plan.text = input.value;
+    savePlans();
+    renderPlans();
+  }
+
+  input.addEventListener("blur", saveEdit);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") saveEdit();
+  });
+
+  const emojiPicker = document.createElement("emoji-picker");
+  document.body.appendChild(emojiPicker);
+  emojiPicker.addEventListener("emoji-click", (e) => {
+    plannerInput.value += e.detail.unicode;
+  });
+}
+
 // mark complete
 function completePlan(id) {
   plans = plans.map((p) => (p.id === id ? { ...p, completed: true } : p));
+  savePlans();
+  renderPlans();
+
+  tsParticles.load("confetti-container", {
+    preset: "confetti",
+    particles: {
+      color: {
+        value: [
+          "#ff0000",
+          "#00ff00",
+          "#0000ff",
+          "#ffff00",
+          "#ff00ff",
+          "#00ffff",
+        ],
+      },
+      size: {
+        value: 5,
+        random: true,
+      },
+      move: {
+        enable: true,
+        speed: 10,
+        direction: "random",
+        outModes: {
+          default: "out",
+        },
+      },
+    },
+    fullScreen: {
+      enable: false,
+    },
+  });
 }
+
+tsParticles.load("confetti-container", {
+  preset: "confetti",
+  particles: {
+    color: {
+      value: ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff"],
+    },
+    size: {
+      value: 5,
+      random: true,
+    },
+    move: {
+      enable: true,
+      speed: 10,
+      direction: "random",
+      outModes: {
+        default: "out",
+      },
+    },
+  },
+  fullScreen: {
+    enable: false,
+  },
+});
+
+loadPlans();
