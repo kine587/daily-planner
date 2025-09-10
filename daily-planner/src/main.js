@@ -58,10 +58,6 @@ function renderPlans() {
     const div = document.createElement("div");
     div.className = "plans";
 
-    if (plan.completed) {
-      div.style.textDecoration = "line-through";
-    }
-
     let text = plan.text;
 
     if (plan.dueDate) {
