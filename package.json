@@ -3,6 +3,7 @@
     "date-fns": "^4.1.0",
     "emoji-picker-element": "^1.27.0",
     "notyf": "^3.10.0",
-    "tsparticles": "^3.9.1"
+    "tsparticles": "^3.9.1",
+    "tsparticles-preset-confetti": "^2.12.0"
   }
 }
